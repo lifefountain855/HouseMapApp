@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Platform, Animated } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 import * as Location from 'expo-location';
 
 // Default to Rexburg coordinates
@@ -14,14 +14,14 @@ const DEFAULT_REGION = {
 
 // Map status to visual colors
 const STATUS_COLORS = {
-  none: '#007AFF',            // Blue (Default)
+  none: '#8E8E93',            // Blue (Default)
   no_soliciting: '#8B0000',   // Dark Red
   not_interested: '#FF3B30',  // Red
   come_back: '#ffd500',       // Gold / Orange-Yellow
   appointment: '#34C759',     // Green
 };
 const DARK_STATUS_COLORS = {
-  none: '#0056b3',            // Dark Blue (Default)
+  none: '#8E8E93',            // Dark Blue (Default)
   no_soliciting: '#6b0000',   // Dark Red
   not_interested: '#cc2929',  // Dark Red
   come_back: '#ccaa00',       // Gold / Orange-Yellow
@@ -43,6 +43,7 @@ export default function MapArea({
   mapType = 'standard',
   initialRegion = null,
   onRegionChangeComplete = null,
+  onMapPress
 }) {
   
   const [showBanner, setShowBanner] = useState(true);
@@ -56,6 +57,9 @@ export default function MapArea({
     const t = setTimeout(() => setTracksViewChanges(false), 800);
     return () => clearTimeout(t);
   }, [houses]);
+
+  // Heading for compass overlay
+  const [heading, setHeading] = useState(0);
 
   // Auto-hide banner after 5 seconds with fade-out animation
   useEffect(() => {
@@ -116,17 +120,36 @@ export default function MapArea({
         style={styles.map}
         provider={PROVIDER_DEFAULT}
         initialRegion={initialRegion || DEFAULT_REGION}
+        onPress={(e) => {
+          // ios fix
+          if (e.nativeEvent.action === 'marker-press') {
+            return;
+          }
+
+          // Tapping map should close any open UI
+          if (typeof onMapPress === 'function') onMapPress(e.nativeEvent.coordinate);
+        }}
         onLongPress={handleLongPress}
-        onRegionChangeComplete={(region) => {
+        onRegionChangeComplete={async (region) => {
+          // propagate region
           if (onRegionChangeComplete) onRegionChangeComplete(region);
+          // update compass heading if possible
+          try {
+            if (mapRef && mapRef.current && mapRef.current.getCamera) {
+              const cam = await mapRef.current.getCamera();
+              setHeading(cam.heading || 0);
+            }
+          } catch (e) {
+            // ignore
+          }
         }}
         showsUserLocation={true}
         showsMyLocationButton={false}
-        // showsCompass={true}
-        showsCompass={false}
+        showsCompass={true}
         mapType={mapType}
         // moves the apple and legal labels to bottom left
         appleLogoInsets={{ top: 0, left: 0, bottom: 50, right: 0 }}
+        showsLegalLabel={false} // does this work?
         legalLabelInsets={{ top: 0, left: 50, bottom: 50, right: 0 }}
       >
         {houses.map((house) => {
@@ -192,6 +215,13 @@ export default function MapArea({
           </Text>
         </Animated.View>
       )}
+
+      {/* Compass overlay (shows current heading) */}
+      <View style={styles.compassContainer} pointerEvents="none">
+        <Animated.View style={[styles.compass, { transform: [{ rotate: `${-heading}deg` }] }]}>
+          <Ionicons name="compass" size={20} color="#333" />
+        </Animated.View>
+      </View>
     </View>
   );
 }
@@ -284,5 +314,28 @@ const styles = StyleSheet.create({
     color: LIGHT,
     fontSize: 12,
     fontWeight: '500',
+  },
+  compassContainer: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 88 : 68,
+    left: 16,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 12,
+  },
+  compass: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 4,
   }
 });

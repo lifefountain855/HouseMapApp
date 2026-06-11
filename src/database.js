@@ -288,14 +288,32 @@ export const database = {
       const house = houses[houseIndex];
       house.people = house.people.filter(p => p.id !== personId);
       
-      if (house.people.length === 0) {
-        // We no longer delete the house if it has 0 residents, because we want it to remain on the map as an empty house with a status!
-        // This is a crucial update! Let's just save the house with people = []
-      }
+      // if (house.people.length === 0) {
+      //   // We no longer delete the house if it has 0 residents, because we want it to remain on the map as an empty house with a status!
+      //   // This is a crucial update! Let's just save the house with people = []
+      // }
       
       await this.saveHouses(houses);
     }
     return houses;
+  },
+
+  /**
+   * Delete an entire house by id
+   */
+  async deleteHouse(houseId) {
+    try {
+      let houses = await this.getHouses();
+      const newHouses = houses.filter(h => h.id !== houseId);
+
+      // Persist
+      await this.saveHouses(newHouses);
+
+      return newHouses;
+    } catch (e) {
+      console.error('Failed to delete house:', e);
+      return [];
+    }
   },
 
   /**

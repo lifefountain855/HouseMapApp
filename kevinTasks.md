@@ -1,5 +1,6 @@
+
 ## Major Changes:
-- [ ] database usage and simple login
+- [x] database usage and simple login
 - [ ] Dark mode / theme options
 - [ ] Offline map support
 - [ ] Settings page
@@ -13,17 +14,14 @@
 - [ ] Notifications for location-based events
 - [ ] In-app help and tutorials
 - [ ] Accessibility features (screen reader support, large text)
-- [ ] Collaboration / sharing maps with others
 
 ## Bugs:
 ### UI
-- [ ] delete place
-- [ ] click to dismiss popup
-- [ ] N/S map orient
-- [ ] reset -> "knocked"
-- [x] knocked, no solicit, no interest - remove whitespace
 - [ ] apple maps/legal
 - [ ] save visit details green delay
+- [ ] expand on drag grey thingy
+- [ ] on person creation, cancel and create buttons are too far
+- [ ] display errors on dots and houses android
 
 
 

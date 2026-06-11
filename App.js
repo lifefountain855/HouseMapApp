@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet, View, StatusBar, Alert, Platform, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { database } from './src/database';
 import MapArea from './src/components/MapArea';
 import SearchBar from './src/components/SearchBar';
@@ -114,6 +114,35 @@ export default function App() {
   // Handler: Selecting a search result
   const handleSelectSearchResult = (house) => {
     setSelectedHouse(house);
+  };
+
+  // Handler: Map press to close open menus/modals
+  const handleMapPress = (coordinate) => {
+    // Close any open screens that should dismiss when tapping map
+    setPersonModalVisible(false);
+    setSelectedHouse(null);
+    setAuthModalVisible(false);
+  };
+
+  // Handler: Delete house (parent handles confirmation)
+  const handleDeleteHouse = async (houseId) => {
+    // Confirm before deleting
+    Alert.alert(
+      'Delete place',
+      'Are you sure you want to permanently delete this place?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const newHouses = await database.deleteHouse(houseId);
+            setHouses(Array.isArray(newHouses) ? [...newHouses] : newHouses);
+            setSelectedHouse(null);
+          }
+        }
+      ]
+    );
   };
 
   // Handler: Long press on map to drop a new empty house pin
@@ -320,6 +349,7 @@ export default function App() {
         selectedHouse={selectedHouse}
         onSelectHouse={handleSelectHouse}
         onMapLongPress={handleMapLongPress}
+        onMapPress={handleMapPress}
         mapType={mapType}
         initialRegion={initialRegion}
         onRegionChangeComplete={handleRegionChangeComplete}
@@ -332,6 +362,7 @@ export default function App() {
         onEditPerson={handleEditPerson}
         onAddPersonToHouse={handleAddPersonToHouse}
         onUpdateStatus={handleUpdateHouseStatus}
+        onDeleteHouse={handleDeleteHouse}
       />
 
       {/* Profile Form Modal (Add / Edit / Delete) */}

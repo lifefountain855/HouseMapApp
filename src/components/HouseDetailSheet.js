@@ -10,13 +10,13 @@ import {
   Platform,
   TextInput
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60; // Increase slightly to fit new status editors
 
 const STATUSES = [
-  { key: 'none', label: 'Reset', color: '#8E8E93', icon: 'refresh-circle-outline' },
+  { key: 'none', label: 'Knocked', color: '#8E8E93', icon: 'clipboard-outline' },
   { key: 'no_soliciting', label: 'No Solicit', color: '#8B0000', icon: 'ban-outline' },
   { key: 'not_interested', label: 'No Interest', color: '#FF3B30', icon: 'thumbs-down-outline' },
   { key: 'come_back', label: 'Come Back', color: '#ffd500', icon: 'time-outline' },
@@ -28,7 +28,8 @@ export default function HouseDetailSheet({
   onClose,
   onEditPerson,
   onAddPersonToHouse,
-  onUpdateStatus
+  onUpdateStatus,
+  onDeleteHouse
 }) {
   const slideAnim = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   
@@ -86,7 +87,7 @@ export default function HouseDetailSheet({
     <Animated.View 
       style={[
         styles.sheetContainer, 
-        { height: showDetailInputs ? SHEET_HEIGHT : '24%' },
+        { height: showDetailInputs ? SHEET_HEIGHT : '35%' },
 
         { transform: [{ translateY: slideAnim }] }
       ]}
@@ -257,9 +258,10 @@ export default function HouseDetailSheet({
          ) : null}
       </ScrollView>
 
+
       {/* Bottom Actions Bar */}
-      {showDetailInputs ? (
       <View style={styles.actionBar}>
+        {showDetailInputs ? (
         <TouchableOpacity 
           style={styles.addButton} 
           onPress={() => onAddPersonToHouse(house)}
@@ -267,8 +269,23 @@ export default function HouseDetailSheet({
           <Ionicons name="person-add" size={18} color="#FFF" style={styles.addButtonIcon} />
           <Text style={styles.addButtonText}>Add Person to House</Text>
         </TouchableOpacity>
-      </View>
+        ) : null}
+      
+      {/* Delete empty place button */}
+      {house.people.length === 0 ? (
+        <TouchableOpacity
+          style={[styles.addButton, styles.deleteButton]}
+          onPress={() => {
+            if (typeof onDeleteHouse === 'function') {
+              onDeleteHouse(house.id);
+            }
+          }}
+        >
+          <Ionicons name="trash" size={18} color="#FFF" style={styles.addButtonIcon} />
+          <Text style={styles.addButtonText}>Delete Place</Text>
+        </TouchableOpacity>
       ) : null}
+      </View>
     </Animated.View>
   );
 }
@@ -427,6 +444,7 @@ const styles = StyleSheet.create({
   },
   residentsSection: {
     marginTop: 10,
+    marginBottom: 10,
   },
   residentCard: {
     backgroundColor: '#F8F8F9',
@@ -513,6 +531,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E5EA',
     borderStyle: 'dashed',
+    marginBottom: "13%",
   },
   emptyPeopleText: {
     color: '#8E8E93',
@@ -547,6 +566,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 3,
+    margin: 3,
   },
   addButtonIcon: {
     marginRight: 8,
@@ -555,5 +575,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFF',
-  }
+  },
+  // deleteButton: {
+  //   backgroundColor: '#FF3B30',
+  //   marginLeft: 12,
+  // },
+  deleteButton: {
+    backgroundColor: '#FF3B30',
+    borderRadius: 12,
+    height: 48,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#FF3B30',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+    margin: 3,
+  },
 });
