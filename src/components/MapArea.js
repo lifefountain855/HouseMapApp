@@ -48,6 +48,15 @@ export default function MapArea({
   const [showBanner, setShowBanner] = useState(true);
   const opacityAnim = useRef(new Animated.Value(1));
 
+  // Workaround for Android marker rendering: briefly allow tracksViewChanges after houses change
+  const [tracksViewChanges, setTracksViewChanges] = useState(true);
+  useEffect(() => {
+    // Enable re-rendering while markers are updating, then disable for performance
+    setTracksViewChanges(true);
+    const t = setTimeout(() => setTracksViewChanges(false), 800);
+    return () => clearTimeout(t);
+  }, [houses]);
+
   // Auto-hide banner after 5 seconds with fade-out animation
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -69,12 +78,16 @@ export default function MapArea({
   // Center map on selected house when it changes
   useEffect(() => {
     if (selectedHouse && mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: selectedHouse.latitude - 0.001,
-        longitude: selectedHouse.longitude,
-        latitudeDelta: 0.003,
-        longitudeDelta: 0.003,
-      }, 600);
+      try {
+        mapRef.current.animateToRegion({
+          latitude: Number(selectedHouse.latitude) - 0.001,
+          longitude: Number(selectedHouse.longitude),
+          latitudeDelta: 0.003,
+          longitudeDelta: 0.003,
+        }, 600);
+      } catch (e) {
+        console.warn('Failed to animate to selectedHouse', e);
+      }
     }
   }, [selectedHouse]);
 
@@ -126,11 +139,11 @@ export default function MapArea({
             <Marker
               key={house.id}
               coordinate={{
-                latitude: house.latitude,
-                longitude: house.longitude
+                latitude: Number(house.latitude),
+                longitude: Number(house.longitude)
               }}
               onPress={() => onSelectHouse(house)}
-              tracksViewChanges={Platform.OS === 'android' ?  false : true}
+              tracksViewChanges={tracksViewChanges}
             >
               {hasPeople ? (
                 /* 1. House with Residents: Render Full Apple-style Home Bubble Pin */
