@@ -9,6 +9,8 @@ import MapArea from './src/components/MapArea';
 import SearchBar from './src/components/SearchBar';
 import HouseDetailSheet from './src/components/HouseDetailSheet';
 import PersonModal from './src/components/PersonModal';
+import { supabase } from './src/supabase'
+import AuthModal from './src/components/AuthModal';
 
 export default function App() {
   const [houses, setHouses] = useState([]);
@@ -24,11 +26,50 @@ export default function App() {
   const mapRef = useRef(null);
   const [initialRegion, setInitialRegion] = useState(null);
 
+  // Auth UI state
+  const [authModalVisible, setAuthModalVisible] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    // Subscribe to auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setCurrentUser(session?.user ?? null);
+      // Refresh houses (from Supabase if logged-in, otherwise from AsyncStorage)
+      (async () => {
+        try {
+          const storedHouses = await database.getHouses();
+// ****   console.log('[App] refreshed houses after auth change, count=', Array.isArray(storedHouses) ? storedHouses.length : 'n/a');
+          setHouses(Array.isArray(storedHouses) ? [...storedHouses] : storedHouses);
+        } catch (e) {
+          console.warn('Failed to refresh houses after auth change', e);
+        }
+      })();
+    });
+
+    // Check initial session
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        // console.log('[Auth] initial getUser', { userId: data?.user?.id });
+        setCurrentUser(data?.user ?? null);
+        // Ensure houses reflect current session
+        const storedHouses = await database.getHouses();
+        setHouses(Array.isArray(storedHouses) ? [...storedHouses] : storedHouses);
+      } catch (e) {
+        console.warn('auth getUser failed', e);
+      }
+    })();
+
+    return () => {
+      authListener?.subscription?.unsubscribe?.();
+    };
+  }, []);
+
   // Load houses from database on mount
   useEffect(() => {
     async function loadData() {
       const storedHouses = await database.getHouses();
-      setHouses(storedHouses);
+      setHouses(Array.isArray(storedHouses) ? [...storedHouses] : storedHouses);
     }
     loadData();
   }, []);
@@ -114,7 +155,7 @@ export default function App() {
       address
     );
     
-    setHouses(result.houses);
+    setHouses(Array.isArray(result.houses) ? [...result.houses] : result.houses);
     setSelectedHouse(result.selectedHouse); // Auto-open details sheet for the new empty house
   };
 
@@ -161,7 +202,7 @@ export default function App() {
         formData.address,
         formData
       );
-      setHouses(result.houses);
+      setHouses(Array.isArray(result.houses) ? [...result.houses] : result.houses);
       setSelectedHouse(result.selectedHouse);
     }
 
@@ -182,7 +223,7 @@ export default function App() {
           style: "destructive",
           onPress: async () => {
             const updatedHouses = await database.deletePerson(selectedHouse.id, personId);
-            setHouses(updatedHouses);
+            setHouses(Array.isArray(updatedHouses) ? [...updatedHouses] : updatedHouses);
             
             refreshSelectedHouse(updatedHouses, selectedHouse.id);
             setPersonModalVisible(false);
@@ -196,7 +237,7 @@ export default function App() {
   // Handler: Update House Visiting Status (Color, comments, return time)
   const handleUpdateHouseStatus = async (houseId, status, comments, time) => {
     const updatedHouses = await database.updateHouseStatus(houseId, status, comments, time);
-    setHouses(updatedHouses);
+    setHouses(Array.isArray(updatedHouses) ? [...updatedHouses] : updatedHouses);
     refreshSelectedHouse(updatedHouses, houseId);
   };
 
@@ -261,6 +302,9 @@ export default function App() {
 
       {/* Floating Map Controls Panel */}
       <View style={styles.floatingControls}>
+        <TouchableOpacity style={styles.controlButton} onPress={() => setAuthModalVisible(true)} activeOpacity={0.7}>
+          <Ionicons name="person" size={22} color="#007AFF" />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.controlButton} onPress={cycleMapType} activeOpacity={0.7}>
           <Ionicons name="layers" size={22} color="#007AFF" />
         </TouchableOpacity>
@@ -303,6 +347,13 @@ export default function App() {
         defaultAddress={defaultAddress}
         coordinate={pendingCoordinate}
       />
+
+      <AuthModal
+        visible={authModalVisible}
+        onClose={() => setAuthModalVisible(false)}
+        currentUser={currentUser}
+      />
+
       </View>
     </SafeAreaProvider>
   );

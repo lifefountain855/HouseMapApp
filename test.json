@@ -1,0 +1,106 @@
+[
+    {
+        "idx": 0,
+        "id": 1,
+        "owner_id": "2c53160b-0b64-427d-b5b1-003b46939a40",
+        "data": [
+            {
+                "id": "house_1",
+                "people": [
+                    {
+                        "id": "p1",
+                        "name": "Sarah Connor",
+                        "role": "Owner",
+                        "notes": "Enjoys gardening. Works from home as a tech consultant. Extremely friendly.",
+                        "createdAt": "2026-06-10T21:50:00.267Z",
+                        "avatarColor": "#FF2D55"
+                    },
+                    {
+                        "id": "p2",
+                        "name": "John Connor",
+                        "role": "Resident",
+                        "notes": "High school student. Loves skateboarding and robotics.",
+                        "createdAt": "2026-06-10T21:50:00.267Z",
+                        "avatarColor": "#007AFF"
+                    }
+                ],
+                "status": "come_back",
+                "address": "1024 Market St, San Francisco, CA",
+                "latitude": 37.7749,
+                "longitude": -122.4194,
+                "statusTime": "Tomorrow at 4:00 PM",
+                "statusComments": "Talked to John, but Sarah was out. Need to follow up about signing."
+            },
+            {
+                "id": "house_2",
+                "people": [
+                    {
+                        "id": "p3",
+                        "name": "Dr. Marcus Vance",
+                        "role": "Tenant",
+                        "notes": "Dentist. Speaks Spanish. Usually away on weekends.",
+                        "createdAt": "2026-06-10T21:50:00.267Z",
+                        "avatarColor": "#4CD964"
+                    }
+                ],
+                "status": "appointment",
+                "address": "450 Sutter St, San Francisco, CA",
+                "latitude": 37.7833,
+                "longitude": -122.4167,
+                "statusTime": "Friday at 10:00 AM",
+                "statusComments": "Appointment set to complete contract signing."
+            },
+            {
+                "id": "house_3",
+                "people": [
+                    {
+                        "id": "p4",
+                        "name": "Elena Rostova",
+                        "role": "Resident",
+                        "notes": "Professional pianist. Quiet neighbor, practices during the day.",
+                        "createdAt": "2026-06-10T21:50:00.267Z",
+                        "avatarColor": "#AF52DE"
+                    }
+                ],
+                "status": "no_soliciting",
+                "address": "501 Stanyan St, San Francisco, CA",
+                "latitude": 37.7699,
+                "longitude": -122.4468,
+                "statusTime": "",
+                "statusComments": "Has \"No Soliciting\" sign on front door and gate."
+            },
+            {
+                "id": "h_qnk3c0ua0",
+                "people": [],
+                "status": "not_interested",
+                "address": "1007 S Second E",
+                "latitude": 43.95618414388884,
+                "longitude": -111.67946901752235,
+                "statusTime": "",
+                "statusComments": ""
+            },
+            {
+                "id": "h_z2s561n05",
+                "people": [],
+                "status": "appointment",
+                "address": "108 E Tenth South",
+                "latitude": 43.95628333960578,
+                "longitude": -111.68001004316339,
+                "statusTime": "",
+                "statusComments": ""
+            },
+            {
+                "id": "h_bh7g2juk4",
+                "people": [],
+                "status": "come_back",
+                "address": "106 E Tenth South",
+                "latitude": 43.95596353167768,
+                "longitude": -111.68042799188133,
+                "statusTime": "",
+                "statusComments": ""
+            }
+        ],
+        "inserted_at": "2026-06-10 21:52:00.158951+00",
+        "updated_at": "2026-06-10 21:52:16.240071+00"
+    }
+]
