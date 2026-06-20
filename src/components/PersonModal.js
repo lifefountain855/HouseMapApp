@@ -10,35 +10,28 @@ import {
   Platform,
   ScrollView
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const ROLES = ['Resident', 'Owner', 'Tenant', 'Guest'];
+const ROLES = ['Owner', 'Resident', 'Guest'];
 
-export default function PersonModal({
-  visible,
-  onClose,
-  onSave,
-  onDelete,
-  person, // If provided, we are in Edit mode
-  defaultAddress,
-  coordinate
-}) {
+function ModalContent({ visible, onClose, onSave, onDelete, person, defaultAddress, coordinate }) {
+  const insets = useSafeAreaInsets(); // This will now accurately grab the top notch height!
+
   const [name, setName] = useState('');
-  const [role, setRole] = useState('Resident');
+  const [role, setRole] = useState('Owner');
   const [notes, setNotes] = useState('');
   const [address, setAddress] = useState('');
   const [error, setError] = useState('');
 
-  // Load values when person or defaultAddress changes
   useEffect(() => {
     if (person) {
       setName(person.name || '');
-      setRole(person.role || 'Resident');
+      setRole(person.role || 'Owner');
       setNotes(person.notes || '');
       setAddress(defaultAddress || '');
     } else {
       setName('');
-      setRole('Resident');
+      setRole('Owner');
       setNotes('');
       setAddress(defaultAddress || '');
     }
@@ -59,140 +52,133 @@ export default function PersonModal({
   };
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={false}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <SafeAreaView style={styles.container}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity style={styles.headerButton} onPress={onClose}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-            
-            <Text style={styles.headerTitle}>
-              {person ? 'Edit Profile' : 'New Record'}
-            </Text>
-            
-            <TouchableOpacity style={styles.headerButton} onPress={handleSave}>
-              <Text style={styles.saveText}>{person ? 'Save' : 'Add'}</Text>
-            </TouchableOpacity>
-          </View>
+    <View style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        {/* The paddingTop dynamically pushes the header below the notch/status bar */}
+        <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
+          <TouchableOpacity style={styles.headerButton} onPress={onClose}>
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+          
+          <Text style={styles.headerTitle}>
+            {person ? 'Edit Profile' : 'New Record'}
+          </Text>
+          
+          <TouchableOpacity style={styles.headerButton} onPress={handleSave}>
+            <Text style={styles.saveText}>{person ? 'Save' : 'Add'}</Text>
+          </TouchableOpacity>
+        </View>
 
-          <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-            {/* Avatar Circle with initials */}
-            <View style={styles.avatarContainer}>
-              <View style={[styles.avatar, { backgroundColor: person ? person.avatarColor : '#007AFF' }]}>
-                <Text style={styles.avatarInitials}>
-                  {name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '?'}
-                </Text>
-              </View>
-              <Text style={styles.avatarSubtitle}>
-                {coordinate ? `At ${coordinate.latitude.toFixed(4)}, ${coordinate.longitude.toFixed(4)}` : ''}
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          {/* ... keeping the rest of your ScrollView exactly the same ... */}
+          <View style={styles.avatarContainer}>
+            <View style={[styles.avatar, { backgroundColor: person ? person.avatarColor : '#007AFF' }]}>
+              <Text style={styles.avatarInitials}>
+                {name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '?'}
               </Text>
             </View>
+            <Text style={styles.avatarSubtitle}>
+              {coordinate ? `At ${coordinate.latitude.toFixed(4)}, ${coordinate.longitude.toFixed(4)}` : ''}
+            </Text>
+          </View>
 
-            {/* Error Message */}
-            {error ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            ) : null}
-
-            {/* Form Fields */}
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>PERSONAL DETAILS</Text>
-              <View style={styles.card}>
-                <View style={styles.inputRow}>
-                  <Text style={styles.inputLabel}>Full Name</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="John Doe"
-                    placeholderTextColor="#999"
-                    value={name}
-                    onChangeText={(text) => {
-                      setName(text);
-                      if (error) setError('');
-                    }}
-                  />
-                </View>
-                
-                <View style={styles.divider} />
-                
-                <View style={styles.inputRow}>
-                  <Text style={styles.inputLabel}>Address</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="123 Main St, City, ST"
-                    placeholderTextColor="#999"
-                    value={address}
-                    onChangeText={setAddress}
-                  />
-                </View>
-              </View>
+          {error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
             </View>
+          ) : null}
 
-            {/* Role Picker (iOS style pills) */}
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>ROLE AT HOUSE</Text>
-              <View style={styles.roleContainer}>
-                {ROLES.map((r) => (
-                  <TouchableOpacity
-                    key={r}
-                    style={[
-                      styles.rolePill,
-                      role === r && styles.rolePillSelected
-                    ]}
-                    onPress={() => setRole(r)}
-                  >
-                    <Text
-                      style={[
-                        styles.roleText,
-                        role === r && styles.roleTextSelected
-                      ]}
-                    >
-                      {r}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            {/* Notes Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>ADDITIONAL DETAILS & INFO</Text>
-              <View style={styles.card}>
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>PERSONAL DETAILS</Text>
+            <View style={styles.card}>
+              <View style={styles.inputRow}>
+                <Text style={styles.inputLabel}>Full Name</Text>
                 <TextInput
-                  style={[styles.textInput, styles.textArea]}
-                  placeholder="Add contact info, notes, or community observations here..."
+                  style={styles.textInput}
+                  placeholder="John Doe"
                   placeholderTextColor="#999"
-                  value={notes}
-                  onChangeText={setNotes}
-                  multiline={true}
-                  numberOfLines={4}
-                  textAlignVertical="top"
+                  value={name}
+                  onChangeText={(text) => {
+                    setName(text);
+                    if (error) setError('');
+                  }}
+                />
+              </View>
+              
+              <View style={styles.divider} />
+              
+              <View style={styles.inputRow}>
+                <Text style={styles.inputLabel}>Address</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="123 Main St, City, ST"
+                  placeholderTextColor="#999"
+                  value={address}
+                  onChangeText={setAddress}
                 />
               </View>
             </View>
+          </View>
 
-            {/* Delete Option (Visible only in edit mode) */}
-            {person && onDelete ? (
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => onDelete(person.id)}
-              >
-                <Text style={styles.deleteButtonText}>Delete Person Record</Text>
-              </TouchableOpacity>
-            ) : null}
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>ROLE AT HOUSE</Text>
+            <View style={styles.roleContainer}>
+              {ROLES.map((r) => (
+                <TouchableOpacity
+                  key={r}
+                  style={[styles.rolePill, role === r && styles.rolePillSelected]}
+                  onPress={() => setRole(r)}
+                >
+                  <Text style={[styles.roleText, role === r && styles.roleTextSelected]}>
+                    {r}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>ADDITIONAL DETAILS & INFO</Text>
+            <View style={styles.card}>
+              <TextInput
+                style={[styles.textInput, styles.textArea]}
+                placeholder="Add contact info, notes, or community observations here..."
+                placeholderTextColor="#999"
+                value={notes}
+                onChangeText={setNotes}
+                multiline={true}
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+            </View>
+          </View>
+
+          {person && onDelete ? (
+            <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(person.id)}>
+              <Text style={styles.deleteButtonText}>Delete Person Record</Text>
+            </TouchableOpacity>
+          ) : null}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
+  );
+}
+
+// 2. Main Export wraps everything cleanly in SafeAreaProvider
+export default function PersonModal(props) {
+  return (
+    <Modal
+      animationType="slide"
+      transparent={false}
+      visible={props.visible}
+      onRequestClose={props.onClose}
+    >
+      <SafeAreaProvider>
+        <ModalContent {...props} />
+      </SafeAreaProvider>
     </Modal>
   );
 }
@@ -206,17 +192,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    height: 56,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#C6C6C8',
-    backgroundColor: '#FFF',
-    paddingHorizontal: 16,
-  },
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center', 
+  borderBottomWidth: StyleSheet.hairlineWidth,
+  borderBottomColor: '#C6C6C8',
+  backgroundColor: '#FFF',
+  paddingHorizontal: 16,
+  paddingBottom: 12, 
+  // marginTop: Platform.OS === 'ios' ? 35 : 0, // Account for status bar on Android
+},
   headerButton: {
-    paddingVertical: 8,
+    paddingVertical: 12,
     minWidth: 60,
   },
   cancelText: {
@@ -233,6 +220,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     color: '#000',
+    paddingVertical: 12,
   },
   scrollContent: {
     paddingBottom: 40,

@@ -147,10 +147,8 @@ export default function MapArea({
         showsMyLocationButton={false}
         showsCompass={true}
         mapType={mapType}
-        // moves the apple and legal labels to bottom left
-        appleLogoInsets={{ top: 0, left: 0, bottom: 50, right: 0 }}
-        showsLegalLabel={false} // does this work?
-        legalLabelInsets={{ top: 0, left: 50, bottom: 50, right: 0 }}
+        // moves away legal labels to bottom left (remove if publishing on App Store)
+        legalLabelInsets={{ top: 0, left: 0, bottom: -1, right: 0 }}
       >
         {houses.map((house) => {
           const isSelected = selectedHouse && selectedHouse.id === house.id;

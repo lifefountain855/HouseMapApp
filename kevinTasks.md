@@ -4,20 +4,22 @@
 - [ ] Dark mode / theme options
 - [ ] Offline map support
 - [ ] Settings page
+- [ ] teams/collaboration
+- [ ] language support
 
 ## Features:
 - [ ] User location tracking and navigation
 - [ ] Search for addresses and points of interest
 - [ ] Save and load favorite locations
-- [ ] Custom markers and annotations
+- [ ] Custom markers and annotations (areas)
 - [ ] Import/export map data (GeoJSON, KML)
 - [ ] Notifications for location-based events
 - [ ] In-app help and tutorials
 - [ ] Accessibility features (screen reader support, large text)
+- [ ] avatar creator for pfp
 
 ## Bugs:
 ### UI
-- [ ] apple maps/legal
 - [ ] save visit details green delay
 - [ ] expand on drag grey thingy
 - [ ] on person creation, cancel and create buttons are too far
