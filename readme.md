@@ -71,4 +71,4 @@ Do not commit secret keys to the repository.
 
 
 ## Contact
-Project maintainer: Your Name <kevrgsapp@gmail.com>
+Project maintainer: Kevin Sapp <kevrgsapp@gmail.com>
